@@ -1,4 +1,4 @@
-package com.digibig.pinyin;
+package com.fxg.pinyin;
 
 /**
  * @author yueyakun

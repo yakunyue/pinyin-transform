@@ -1,7 +1,10 @@
-package com.digibig.pinyin;
+package com.fxg.pinyin;
 
 import com.github.promeg.pinyinhelper.Pinyin;
 import com.github.promeg.pinyinhelper.PinyinMapDict;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,6 +14,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.StringUtils;
 
 /**
@@ -22,16 +26,38 @@ public class PinyinTransformHandle {
 
   private Map<String, List<WaitingProcessField>> fieldMap = new ConcurrentHashMap<>();
 
-  //todo 怎么维护多音字词典呢？这是个问题
-  static {
+  /**
+   * 在初始化块中加载多音字词典
+   */ {
+    log.info("开始加载多音字词典");
     Pinyin.init(Pinyin.newConfig().with(new PinyinMapDict() {
       @Override
       public Map<String, String[]> mapping() {
+        BufferedReader br = null;
         HashMap<String, String[]> map = new HashMap<>();
-        map.put("重庆", new String[]{"CHONG", "QING"});
+        try {
+          ClassPathResource resource = new ClassPathResource("duoyinzi.txt");
+          br = new BufferedReader(new InputStreamReader(resource.getInputStream(), "UTF-8"));
+          String line;
+          while ((line = br.readLine()) != null) {
+            String[] arr = line.split("#");
+            map.put(arr[0], arr[1].split(" "));
+          }
+        } catch (Exception e) {
+          e.printStackTrace();
+        } finally {
+          if (br != null) {
+            try {
+              br.close();
+            } catch (IOException e) {
+              e.printStackTrace();
+            }
+          }
+        }
         return map;
       }
     }));
+    log.info("多音字词典加载完毕");
   }
 
   /**
@@ -84,9 +110,12 @@ public class PinyinTransformHandle {
       ToPinyin toPinyin = field.getAnnotation(ToPinyin.class);
       if (Objects.nonNull(toPinyin)) {
         Field sourceField = clazz.getDeclaredField(toPinyin.sourceField());
-        field.setAccessible(true);
-        sourceField.setAccessible(true);
-        result.add(new WaitingProcessField(field, sourceField, toPinyin.type()));
+        //限定原字段类型必须为String，否则不处理
+        if (sourceField.getType().equals(String.class)) {
+          field.setAccessible(true);
+          sourceField.setAccessible(true);
+          result.add(new WaitingProcessField(field, sourceField, toPinyin.type()));
+        }
       }
     }
     log.debug("首次调用 初始化需填充field完毕");

@@ -1,4 +1,4 @@
-package com.digibig.pinyin;
+package com.fxg.pinyin;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

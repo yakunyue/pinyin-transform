@@ -1,4 +1,4 @@
-package com.digibig.pinyin;
+package com.fxg.pinyin;
 
 import java.lang.reflect.Field;
 import lombok.AllArgsConstructor;

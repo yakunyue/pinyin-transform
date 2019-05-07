@@ -1,4 +1,4 @@
-package com.digibig.pinyin;
+package com.fxg.pinyin;
 
 import java.util.Arrays;
 import org.slf4j.Logger;

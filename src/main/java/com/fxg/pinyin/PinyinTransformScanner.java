@@ -1,6 +1,7 @@
-package com.digibig.pinyin;
+package com.fxg.pinyin;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -98,8 +99,9 @@ class PinyinTransformScanner extends ClassPathBeanDefinitionScanner {
         ParameterizedType pt = ParameterizedType.class.cast(type);
         Class domainClass = Class.class.cast(pt.getActualTypeArguments()[0]);
         Field[] fields = domainClass.getDeclaredFields();
-        for (Field field : fields) {
-          if (field.isAnnotationPresent(ToPinyin.class)) {
+        for (Field field:fields){
+          Annotation annotation = field.getAnnotation(ToPinyin.class);
+          if (annotation != null) {
             return true;
           }
         }
@@ -132,7 +134,6 @@ class PinyinTransformScanner extends ClassPathBeanDefinitionScanner {
     return flag;
   }
 
-  //获取泛型类
   private Class getClassname(Class clazz) throws Exception {
     Type type = clazz.getGenericSuperclass();
     ParameterizedType pt = ParameterizedType.class.cast(type);
